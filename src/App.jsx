@@ -7,59 +7,84 @@ const products = [
   { name: "Pasta", price: 0.7 },
 ];
 
-// 📌 Milestone 2: Aggiungere prodotti al carrello
-// Aggiungi uno stato locale addedProducts (inizialmente un array vuoto) per rappresentare i prodotti nel carrello.
-// Per ogni prodotto della lista, aggiungi un bottone "Aggiungi al carrello":
-// Al click del bottone, usa una funzione addToCart per:
-// Aggiungere il prodotto al carrello se non è già presente, con una proprietà quantity = 1.
-// Se il prodotto è già nel carrello, ignora l’azione.
-// Sotto alla lista dei prodotti, mostra una lista dei prodotti nel carrello se addedProducts contiene almeno un elemento.
-// Per ogni prodotto nel carrello, mostra:
-// Nome
-// Prezzo
-// Quantità
-
-// Obiettivo: L’utente può aggiungere prodotti al carrello e vedere una lista dei prodotti aggiunti.
-
 function App() {
-  const [addedProducts, setaddedProducts] = useState([]);
+  const [addedProducts, setAddedProducts] = useState([]);
 
   function addToCart(product) {
     const exists = addedProducts.find((p) => p.name === product.name);
     if (!exists) {
-      setaddedProducts([...addedProducts, { ...product, quantity: 1 }]);
+      setAddedProducts([...addedProducts, { ...product, quantity: 1 }]);
+    } else {
+      const updatedProducts = addedProducts.map((p) =>
+        p.name === product.name ? { ...p, quantity: p.quantity + 1 } : p
+      );
+      setAddedProducts(updatedProducts);
     }
   }
+
+  function updateProductQuantity(product) {
+    const updatedProducts = addedProducts.map((p) => {
+      if (p.name === product.name) {
+        return { ...p, quantity: p.quantity + 1 };
+      }
+      return p;
+    });
+    setAddedProducts(updatedProducts);
+  }
+  function removeFromCart(product) {
+    const updatedProducts = addedProducts
+      .map((p) =>
+        p.name === product.name ? { ...p, quantity: p.quantity - 1 } : p
+      )
+      .filter((p) => p.quantity > 0);
+
+    setAddedProducts(updatedProducts);
+  }
+
+  //   Al click successivo del bottone "Aggiungi al carrello", se il prodotto è già presente:
+  // Usa una funzione updateProductQuantity per incrementare la proprietà quantity del prodotto esistente.
+  // Per ogni prodotto nel carrello, aggiungi un bottone "Rimuovi dal carrello":
+  // Al click, usa una funzione removeFromCart per rimuovere il prodotto dal carrello.
+  // Sotto alla lista del carrello, mostra il totale da pagare:
+  // Calcola il totale moltiplicando il prezzo per la quantità di ogni prodotto e somma tutti i risultati.
+  // Obiettivo: Gestire l’aggiunta, la rimozione e il calcolo del totale del carrello in modo dinamico.
+
   return (
     <>
       <h1>Prodotti</h1>
       <ul>
-        {products.map((product, index) => {
-          return (
-            <div key={index}>
-              <li>
-                {product.name}, € {product.price}
-              </li>
-              <button
-                onClick={() => {
-                  addToCart(product);
-                }}
-              >
-                Aggiungi al carrello
-              </button>
-            </div>
-          );
-        })}
+        {products.map((product, index) => (
+          <li key={index}>
+            {product.name}, € {product.price}
+            <button onClick={() => addToCart(product)}>
+              Aggiungi al carrello
+            </button>
+          </li>
+        ))}
       </ul>
+
       <h1>Carrello</h1>
-      {addedProducts.length > 0 && (
-        <ul>
-          {addedProducts.map((prod, index) => (
-            <li key={index}>
-              {prod.name}, € {prod.price}, {prod.quantity}
-            </li>
-          ))}
-        </ul>
+      {addedProducts.length > 0 ? (
+        <>
+          <ul>
+            {addedProducts.map((prod, index) => (
+              <li key={index}>
+                {prod.name}, € {prod.price}, {prod.quantity}
+                <button onClick={() => removeFromCart(prod)}>
+                  Rimuovi dal carrello
+                </button>
+              </li>
+            ))}
+          </ul>
+          <h2>
+            Totale: €{" "}
+            {addedProducts
+              .reduce((acc, curr) => acc + curr.price * curr.quantity, 0)
+              .toFixed(2)}
+          </h2>
+        </>
+      ) : (
+        <p>Il carrello è vuoto.</p>
       )}
     </>
   );
